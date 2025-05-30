@@ -542,44 +542,6 @@ if ($script:passedTests -eq $script:totalTests) {
 }
 ```
 
----
-
-## 📋 Checklist de Validación Manual
-
-### ✅ Pre-entrega Checklist
-
-**1. Servicios Base**
-- [ ] Docker containers todos en estado "Up"
-- [ ] Puertos 8085, 8000, 8001, 9090, 9411, 3000 responden
-- [ ] No hay errores críticos en logs
-
-**2. Funcionalidad Core**
-- [ ] Health check responde con status "UP"
-- [ ] POST /solicitudes crea solicitudes correctamente
-- [ ] GET /solicitudes/{id} consulta solicitudes existentes
-- [ ] Autenticación JWT funciona (acepta válidos, rechaza inválidos)
-- [ ] Integración SOAP genera certificaciones
-
-**3. API Gateway**
-- [ ] Kong Admin API responde en puerto 8001
-- [ ] Kong Proxy funciona en puerto 8000
-- [ ] Rutas configuradas correctamente
-- [ ] Servicios registrados en Kong
-
-**4. Observabilidad**
-- [ ] Zipkin muestra trazas de requests
-- [ ] Prometheus colecta métricas
-- [ ] Grafana accesible con admin/admin
-- [ ] Logs estructurados con correlation IDs
-
-**5. Documentación**
-- [ ] README.md completo y actualizado
-- [ ] Documentación de API disponible
-- [ ] Diagramas de arquitectura incluidos
-- [ ] Scripts de testing funcionando
-
----
-
 ## 🚨 Troubleshooting
 
 ### Problemas Comunes y Soluciones

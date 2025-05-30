@@ -1,0 +1,97 @@
+services:
+  # Nuestro microservicio
+  solicitud-service:
+    build: ./solicitud-service
+    ports:
+      - "8085:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - zipkin
+      - kong-database
+    networks:
+      - universidad-network
+
+  # Kong API Gateway
+  kong-database:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kongpass
+    ports:
+      - "5432:5432"
+    networks:
+      - universidad-network
+    volumes:
+      - kong-data:/var/lib/postgresql/data
+
+  kong-migrations:
+    image: kong:3.4
+    command: kong migrations bootstrap
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+    networks:
+      - universidad-network
+
+  kong:
+    image: kong:3.4
+    depends_on:
+      - kong-database
+      - kong-migrations
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    ports:
+      - "8000:8000"  # Proxy
+      - "8001:8001"  # Admin API
+    networks:
+      - universidad-network
+
+  # Monitoring
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+    networks:
+      - universidad-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - universidad-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - universidad-network
+
+networks:
+  universidad-network:
+    driver: bridge
+
+volumes:
+  kong-data:

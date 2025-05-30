@@ -1,0 +1,59 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: solicitud-service
+  sleuth:
+    zipkin:
+      base-url: http://zipkin:9411
+    sampler:
+      probability: 1.0
+
+# JWT Configuration
+jwt:
+  secret: mi-clave-secreta-super-segura-para-jwt-token-que-debe-ser-muy-larga
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      certificacion-service:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: TIME_BASED
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 60
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - java.lang.Exception
+  retry:
+    instances:
+      certificacion-service:
+        maxAttempts: 3
+        waitDuration: 2s
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.lang.RuntimeException
+          - java.util.concurrent.TimeoutException
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    com.universidad: DEBUG
+    io.github.resilience4j: DEBUG
